@@ -87,7 +87,7 @@
                             <classPath>
                                 <mainClass>ru.ntmedia.MainDialog</mainClass>
                             </classPath>
-                            <icon>${project.basedir}/src/main/resources/convert.ico</icon>
+                            <icon>${project.basedir}/src/main/resources/split.ico</icon>
                             <jre>
                                 <minVersion>1.7.0</minVersion>
                                 <jdkPreference>preferJre</jdkPreference>

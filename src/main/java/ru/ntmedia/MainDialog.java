@@ -49,9 +49,9 @@ public class MainDialog extends JDialog {
 
     }
     public MainDialog() {
-        System.out.println( getClass().getClassLoader().getResource("convert-16x16.png") );
-        Image icon = new ImageIcon(getClass().getClassLoader().getResource("convert-16x16.png")).getImage();
+        Image icon = new ImageIcon(getClass().getClassLoader().getResource("split-16.png")).getImage();
         this.setIconImage(icon);
+        this.setTitle("Постраничное разделение файлов PDF");
         setContentPane(contentPane);
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
