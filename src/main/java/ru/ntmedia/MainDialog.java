@@ -34,8 +34,8 @@ public class MainDialog extends JDialog {
                     e.printStackTrace();
                 }
                 MainDialog dlg = new MainDialog();
-                dlg.setLocationRelativeTo(null);
                 dlg.pack();
+                dlg.setLocationRelativeTo(null);
                 dlg.setVisible(true);
 
             }
