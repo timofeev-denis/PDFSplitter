@@ -9,6 +9,7 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -24,6 +25,7 @@ public class MainDialog extends JDialog {
     private JTextField destTextField;
     private JButton setDestFolderButton;
     private JSeparator separator;
+    private JCheckBox manualDest;
     //private String srcFolder;
     //private String destFolder;
 
@@ -54,6 +56,7 @@ public class MainDialog extends JDialog {
         setModal(true);
         getRootPane().setDefaultButton(buttonOK);
         setComponentsText();
+        destTextField.setEditable(false);
 
         buttonOK.setEnabled(false);
 
@@ -104,14 +107,17 @@ public class MainDialog extends JDialog {
         });
         srcTextField.getDocument().addDocumentListener(new DocumentListener() {
             public void insertUpdate(DocumentEvent documentEvent) {
+                updateDest();
                 updateOkButton();
             }
 
             public void removeUpdate(DocumentEvent documentEvent) {
+                updateDest();
                 updateOkButton();
             }
 
             public void changedUpdate(DocumentEvent documentEvent) {
+                updateDest();
                 updateOkButton();
             }
         });
@@ -132,8 +138,26 @@ public class MainDialog extends JDialog {
 
         //
         //setDebugParameters();
+        manualDest.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent actionEvent) {
+                if( manualDest.isSelected() ) {
+                    destTextField.setEditable(true);
+                } else {
+                    destTextField.setEditable(false);
+                }
+            }
+        });
     }
 
+    private void updateDest() {
+        if (!manualDest.isSelected()) {
+            if (srcTextField.getText().equals("")) {
+                destTextField.setText("");
+            } else {
+                destTextField.setText(srcTextField.getText() + File.separator + "Split");
+            }
+        }
+    }
     private void updateOkButton() {
         if(srcTextField.getText().equals("") || destTextField.getText().equals("")) {
             buttonOK.setEnabled(false);
@@ -148,36 +172,54 @@ public class MainDialog extends JDialog {
         updateOkButton();
     }
     private void onOK() {
-
-        /*
         if(!Files.exists(Paths.get(srcTextField.getText()))) {
-            JOptionPane.showMessageDialog(null, "Указанный каталог с файлами Excel не существует. Выберите другой каталог.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Указанный каталог с файлами PDF не существует. Выберите другой каталог.", "Разделение файлов PDF", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         if(!Files.exists(Paths.get(destTextField.getText()))) {
-            JOptionPane.showMessageDialog(null, "Указанный каталог для сохранения файлов HTML не существует. Выберите другой каталог.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
+            try {
+                Files.createDirectory(Paths.get(destTextField.getText()));
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "Не удалось создать каталог для сохранения результата. Выберите другой каталог.", "Разделение файлов PDF", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+        }
+        File dir = new File(srcTextField.getText());
+        if(dir == null) {
+            JOptionPane.showMessageDialog(null, "Указанный каталог с файлами PDF не существует. Выберите другой каталог.", "Разделение файлов PDF", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
-        */
-        try {
-            PDDocument doc = PDDocument.load(new File("f:\\tmp\\PDF\\HBN.pdf"));
-            int pageCounter = 0;
-            for(PDPage page : doc.getPages()) {
-                pageCounter++;
-                PDDocument tmp  = new PDDocument();
-                tmp.addPage(page);
-                tmp.save( String.format("f:\\tmp\\PDF\\HBN-%1$03d.pdf", pageCounter));
-                tmp.close();
-                System.out.println( pageCounter );
+        for(File f : dir.listFiles(new FilenameFilter() {
+            public boolean accept(File file, String s) {
+                return s.toLowerCase().endsWith(".pdf");
             }
-            //System.err.println("PAGES: " + doc.getPages().getCount());
-            doc.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        })) {
+            try {
+                PDDocument doc = PDDocument.load(f);
+                int pageCounter = 0;
+                for(PDPage page : doc.getPages()) {
+                    pageCounter++;
+                    PDDocument tmp  = new PDDocument();
+                    tmp.addPage(page);
+                    tmp.save(getResultFileName(f.getAbsolutePath(), pageCounter));
+                    tmp.close();
+                    System.out.println( pageCounter );
+                }
+                //System.err.println("PAGES: " + doc.getPages().getCount());
+                doc.close();
+            } catch (IOException e) {
+                JOptionPane.showMessageDialog(null, "При обработке файла произошла ошибка:\n" + e.getMessage(), "Разделение файлов PDF", JOptionPane.INFORMATION_MESSAGE);
+            }
         }
         dispose();
     }
-
+    private String getResultFileName(String fileName, int fileCounter) {
+        // cut path
+        String baseFileName = Paths.get(fileName).getFileName().toString();
+        // cut extension
+        String rootFileName = baseFileName.substring(0, baseFileName.lastIndexOf("."));
+        return String.format(destTextField.getText() + File.separator + rootFileName + "-%1$03d.pdf", fileCounter);
+    }
     private void onCancel() {
         System.err.println("onCancel()");
         dispose();
