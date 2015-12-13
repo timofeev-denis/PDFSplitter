@@ -1,11 +1,15 @@
 package ru.ntmedia;
 
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -144,7 +148,8 @@ public class MainDialog extends JDialog {
         updateOkButton();
     }
     private void onOK() {
-        System.err.println("onOK()");
+
+        /*
         if(!Files.exists(Paths.get(srcTextField.getText()))) {
             JOptionPane.showMessageDialog(null, "Указанный каталог с файлами Excel не существует. Выберите другой каталог.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
             return;
@@ -152,6 +157,23 @@ public class MainDialog extends JDialog {
         if(!Files.exists(Paths.get(destTextField.getText()))) {
             JOptionPane.showMessageDialog(null, "Указанный каталог для сохранения файлов HTML не существует. Выберите другой каталог.", "Конвертация файлов", JOptionPane.INFORMATION_MESSAGE);
             return;
+        }
+        */
+        try {
+            PDDocument doc = PDDocument.load(new File("f:\\tmp\\PDF\\HBN.pdf"));
+            int pageCounter = 0;
+            for(PDPage page : doc.getPages()) {
+                pageCounter++;
+                PDDocument tmp  = new PDDocument();
+                tmp.addPage(page);
+                tmp.save( String.format("f:\\tmp\\PDF\\HBN-%1$03d.pdf", pageCounter));
+                tmp.close();
+                System.out.println( pageCounter );
+            }
+            //System.err.println("PAGES: " + doc.getPages().getCount());
+            doc.close();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         dispose();
     }

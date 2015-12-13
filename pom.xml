@@ -7,6 +7,12 @@
     <groupId>ru.ntmedia</groupId>
     <artifactId>PDFSplitter</artifactId>
     <version>1.0-SNAPSHOT</version>
-
+<dependencies>
+    <dependency>
+        <groupId>org.apache.pdfbox</groupId>
+        <artifactId>pdfbox</artifactId>
+        <version>2.0.0-RC2</version>
+    </dependency>
+</dependencies>
 
 </project>
